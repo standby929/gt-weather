@@ -10,8 +10,8 @@ const GAP = 1;
 
 export default function App() {
   const [hasStarted, setHasStarted] = useState(false);
-  const [minPct, setMinPct] = useState(40);
-  const [maxPct, setMaxPct] = useState(70);
+  const [minPct, setMinPct] = useState(20);
+  const [maxPct, setMaxPct] = useState(60);
   const [result, setResult] = useState(() => generateWeather(minPct, maxPct));
   const [isRunning, setIsRunning] = useState(false);
   const [revealedCount, setRevealedCount] = useState(0);
