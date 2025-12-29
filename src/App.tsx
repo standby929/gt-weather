@@ -42,7 +42,9 @@ export default function App() {
     }
   };
 
-  const rainInfo = `Eső arány: ${result.rainPercent}% → esős kockák: ${result.rainSlots}/9`;
+  const rainInfo = `Eső arány: ${
+    hasStarted ? result.rainPercent : "??"
+  }% → esős kockák: ${hasStarted ? result.rainSlots : "?"}/9`;
 
   return (
     <div className="min-h-screen bg-linear-to-b from-slate-400 to-slate-900 text-black">
@@ -82,8 +84,8 @@ export default function App() {
             <div className="text-center">
               <h3 className="text-black text-3xl">{rainInfo}</h3>
               <p className="text-black text-sm mt-1">
-                Esős indexek:{" "}
-                {result.rainIndices.length
+                Esős indexek:&nbsp;
+                {hasStarted && result.rainIndices.length
                   ? result.rainIndices.map((i) => i + 1).join(", ")
                   : "—"}
               </p>
