@@ -1,5 +1,5 @@
 import type { WeatherPreset } from "../types/WeatherPreset";
-import { RAIN_PRESETS, RANDOM_PRESET, SLOTS } from "./consts";
+import { DRY_PRESETS, RAIN_PRESETS, RANDOM_PRESET, SLOTS } from "./consts";
 
 export function clamp(n: number, a: number, b: number) {
   return Math.max(a, Math.min(b, n));
@@ -60,7 +60,7 @@ export function generateWeather(
     if (rainIndices.includes(i)) {
       slots[i] = sampleOne(RAIN_PRESETS);
     } else {
-      slots[i] = RANDOM_PRESET;
+      slots[i] = Math.random() < 0.7 ? sampleOne(DRY_PRESETS) : RANDOM_PRESET;
     }
   }
 

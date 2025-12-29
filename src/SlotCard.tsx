@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useMemo } from "react";
 import { badgeClasses, sampleOne } from "./utils/utils";
 import type { WeatherPreset } from "./types/WeatherPreset";
-import { RAIN_PRESETS, RANDOM_PRESET } from "./utils/consts";
+import { DRY_PRESETS, RAIN_PRESETS, RANDOM_PRESET } from "./utils/consts";
 
 export default function SlotCard({
   index,
@@ -23,7 +23,7 @@ export default function SlotCard({
 
   const items = useMemo(() => {
     // Pörgésnél ez a “tekercs” fut, a legvégén fixen a finalPreset
-    const pool = [RANDOM_PRESET, ...RAIN_PRESETS];
+    const pool = [...DRY_PRESETS, RANDOM_PRESET, ...RAIN_PRESETS];
     const long = Array.from({ length: 22 }, () => sampleOne(pool));
     return [...long, finalPreset];
   }, [finalPreset]);
