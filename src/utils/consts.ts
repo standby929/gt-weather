@@ -19,8 +19,6 @@ import R8 from "../assets/weather/rain-r8.png";
 import RANDOM from "../assets/weather/random.png";
 
 export const SLOTS = 9;
-export const MIN_RAIN_PERCENT = 25;
-export const MAX_RAIN_PERCENT = 60;
 
 export const TRACKS: Track[] = [
   { id: "monza", name: "monza", image: MONZA },

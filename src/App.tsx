@@ -2,23 +2,20 @@ import { useMemo, useRef, useState } from "react";
 import SlotCard from "./SlotCard";
 import { generateWeather, randInt } from "./utils/utils";
 
-import {
-  MAX_RAIN_PERCENT,
-  MIN_RAIN_PERCENT,
-  SLOTS,
-  TRACKS,
-} from "./utils/consts";
+import { SLOTS, TRACKS } from "./utils/consts";
 
 import LOGO from "./assets/logo-phoenix-league-nobg.png";
 
+const GAP = 1;
+
 export default function App() {
   const [hasStarted, setHasStarted] = useState(false);
-  const [result, setResult] = useState(() =>
-    generateWeather(MIN_RAIN_PERCENT, MAX_RAIN_PERCENT)
-  );
-
+  const [minPct, setMinPct] = useState(40);
+  const [maxPct, setMaxPct] = useState(70);
+  const [result, setResult] = useState(() => generateWeather(minPct, maxPct));
   const [isRunning, setIsRunning] = useState(false);
   const [revealedCount, setRevealedCount] = useState(0);
+
   const [selectedTrackId, setSelectedTrackId] = useState<string>(TRACKS[0].id);
   const selectedTrack = useMemo(() => {
     return TRACKS.find((t) => t.id === selectedTrackId) ?? TRACKS[0];
@@ -27,7 +24,7 @@ export default function App() {
 
   const start = () => {
     const runId = ++runIdRef.current;
-    const next = generateWeather(MIN_RAIN_PERCENT, MAX_RAIN_PERCENT);
+    const next = generateWeather(minPct, maxPct);
     setResult(next);
     setHasStarted(true);
 
@@ -92,12 +89,53 @@ export default function App() {
               </p>
             </div>
 
-            <button
-              onClick={start}
-              className="shrink-0 rounded-xl bg-teal-400 text-black px-4 py-2 font-semibold hover:opacity-90 active:opacity-80"
-            >
-              Esernyőt nyiss!
-            </button>
+            <div>
+              <button
+                onClick={start}
+                className="w-full rounded-xl bg-teal-400 text-black px-4 py-2 font-semibold hover:opacity-90 active:opacity-80"
+              >
+                Esernyőt nyiss!
+              </button>
+              <div className="mt-2 flex flex-row gap-4">
+                {/* MIN */}
+                <div className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-4">
+                  <div className="text-slate-300 text-sm">Minimum eső %</div>
+                  <input
+                    type="range"
+                    min={0}
+                    max={Math.max(0, maxPct - GAP)} // <- ne mehessen a max fölé
+                    value={minPct}
+                    onChange={(e) => {
+                      const nextMin = parseInt(e.target.value, 10);
+                      // biztosítjuk: min <= max - GAP
+                      setMinPct(Math.min(nextMin, maxPct - GAP));
+                    }}
+                    className="w-full mt-2"
+                    disabled={isRunning}
+                  />
+                  <div className="mt-2 text-white font-semibold">{minPct}%</div>
+                </div>
+
+                {/* MAX */}
+                <div className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-4">
+                  <div className="text-slate-300 text-sm">Maximum eső %</div>
+                  <input
+                    type="range"
+                    min={Math.min(100, minPct + GAP)} // <- ne mehessen a min alá
+                    max={100}
+                    value={maxPct}
+                    onChange={(e) => {
+                      const nextMax = parseInt(e.target.value, 10);
+                      // biztosítjuk: max >= min + GAP
+                      setMaxPct(Math.max(nextMax, minPct + GAP));
+                    }}
+                    className="w-full mt-2"
+                    disabled={isRunning}
+                  />
+                  <div className="mt-2 text-white font-semibold">{maxPct}%</div>
+                </div>
+              </div>
+            </div>
           </header>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
