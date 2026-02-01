@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import SlotCard from "./SlotCard";
-import { generateWeather, randInt } from "./utils/utils";
+import { generateWeather, randInt, parseFixedPattern } from "./utils/utils";
 
 import { SLOTS, TRACKS } from "./utils/consts";
 
@@ -12,6 +12,13 @@ export default function App() {
   const [hasStarted, setHasStarted] = useState(false);
   const [minPct, setMinPct] = useState(25);
   const [maxPct, setMaxPct] = useState(65);
+
+  const fixedFirstResult = useMemo(() => {
+    const fp = new URLSearchParams(window.location.search).get("fp");
+    return parseFixedPattern(fp); // GenerationResult | null
+  }, []);
+
+  const fixedUsedRef = useRef(false);
   const [result, setResult] = useState(() => generateWeather(minPct, maxPct));
   const [isRunning, setIsRunning] = useState(false);
   const [revealedCount, setRevealedCount] = useState(0);
@@ -24,7 +31,12 @@ export default function App() {
 
   const start = () => {
     const runId = ++runIdRef.current;
-    const next = generateWeather(minPct, maxPct);
+
+    const next =
+      !fixedUsedRef.current && fixedFirstResult
+        ? ((fixedUsedRef.current = true), fixedFirstResult)
+        : generateWeather(minPct, maxPct);
+
     setResult(next);
     setHasStarted(true);
 

@@ -39,7 +39,7 @@ type GenerationResult = {
 
 export function generateWeather(
   minPct: number,
-  maxPct: number
+  maxPct: number,
 ): GenerationResult {
   const min = clamp(minPct, 0, 100);
   const max = clamp(maxPct, 0, 100);
@@ -53,7 +53,7 @@ export function generateWeather(
 
   const slots: WeatherPreset[] = Array.from(
     { length: SLOTS },
-    () => RANDOM_PRESET
+    () => RANDOM_PRESET,
   );
 
   for (let i = 0; i < SLOTS; i++) {
@@ -73,4 +73,58 @@ export function badgeClasses(kind: WeatherPreset["kind"]) {
   if (kind === "random")
     return "bg-amber-500/15 text-amber-200 ring-1 ring-amber-500/30";
   return "bg-slate-500/15 text-slate-200 ring-1 ring-slate-500/30";
+}
+
+function getPresetCode(p: WeatherPreset): string | undefined {
+  return (p as any).id;
+}
+
+function buildPresetLookup(): Map<string, WeatherPreset> {
+  const all = [...DRY_PRESETS, ...RAIN_PRESETS, RANDOM_PRESET];
+  const map = new Map<string, WeatherPreset>();
+
+  for (const p of all) {
+    const code = getPresetCode(p);
+    if (!code) continue;
+    map.set(code.toUpperCase(), p);
+  }
+
+  return map;
+}
+
+const PRESET_BY_CODE = buildPresetLookup();
+
+export function buildResultFromSlots(slots: WeatherPreset[]): GenerationResult {
+  const rainIndices: number[] = [];
+  for (let i = 0; i < slots.length; i++) {
+    if (slots[i].kind === "rain") rainIndices.push(i);
+  }
+
+  const rainSlots = rainIndices.length;
+  const rainPercent = Math.round((rainSlots / SLOTS) * 100);
+
+  return { rainPercent, rainSlots, rainIndices, slots };
+}
+
+export function parseFixedPattern(
+  fpParam: string | null,
+): GenerationResult | null {
+  if (!fpParam) return null;
+
+  const rawParts = fpParam
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  if (rawParts.length !== SLOTS) return null;
+
+  const slots: WeatherPreset[] = [];
+  for (const part of rawParts) {
+    const key = part.toUpperCase();
+    const preset = PRESET_BY_CODE.get(key);
+    if (!preset) return null; // ismeretlen kód → eldob
+    slots.push(preset);
+  }
+
+  return buildResultFromSlots(slots);
 }
