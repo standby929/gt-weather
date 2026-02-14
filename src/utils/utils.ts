@@ -101,8 +101,9 @@ export function buildResultFromSlots(slots: WeatherPreset[]): GenerationResult {
   }
 
   const rainSlots = rainIndices.length;
+
   const rainPercent =
-    rainSlots === 0 ? 0 : clamp(rainSlots * 10 + randInt(0, 4), 0, 100);
+    rainSlots === 0 ? 0 : clamp(rainSlots * 10 - 5 + randInt(0, 9), 0, 100);
 
   return { rainPercent, rainSlots, rainIndices, slots };
 }
