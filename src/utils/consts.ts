@@ -1,16 +1,10 @@
 import type { Track } from "../types/Track";
 import type { WeatherPreset } from "../types/WeatherPreset";
 
-// import MONZA from "../assets/tracks/monza.png";
-// import ALSACE from "../assets/tracks/alsace-village.png";
-import DRAGONTRALIL from "../assets/tracks/dragon-trail-gardens.png";
-// import BARCELONA from "../assets/tracks/barcelona-catalunya-gp.png";
-import SPA from "../assets/tracks/spa-francorchamps.png";
-// import SAINTECROIXB from "../assets/tracks/sainte-croix-b.png";
-import FUJI from "../assets/tracks/fuji.png";
-// import KYOTO from "../assets/tracks/kyoto-yamagiwa-miyabi.png";
-import NURBURGRING from "../assets/tracks/nurburgring-gp.png";
-// import LAGUNASECA from "../assets/tracks/laguna-seca.png";
+import SUZUKA from "../assets/tracks/suzuka.png";
+import AUTOPOLIS from "../assets/tracks/autopolis.png";
+import LEMANS from "../assets/tracks/24-heures-du-mans.png";
+import REDBULL from "../assets/tracks/red-bull-ring.png";
 
 import R5 from "../assets/weather/rain-r5.png";
 import R6 from "../assets/weather/rain-r6.png";
@@ -25,24 +19,26 @@ import RANDOM from "../assets/weather/random.png";
 export const SLOTS = 9;
 
 export const TRACKS: Track[] = [
-  // { id: "monza", name: "monza", image: MONZA },
-  // { id: "alsace-village", name: "alsace-village", image: ALSACE },
   {
-    id: "dragon-trail-gardens",
-    name: "dragon-trail-gardens",
-    image: DRAGONTRALIL,
+    id: "suzuka",
+    name: "Suzuka",
+    image: SUZUKA,
   },
-  // {
-  //   id: "barcelona-catalunya-gp",
-  //   name: "barcelona-catalunya-gp",
-  //   image: BARCELONA,
-  // },
-  { id: "spa-francorchamps", name: "spa-francorchamps", image: SPA },
-  // { id: "sainte-croix-b", name: "sainte-croix-b", image: SAINTECROIXB },
-  { id: "fuji", name: "fuji", image: FUJI },
-  // { id: "kyoto-yamagiwa-miyabi", name: "kyoto-yamagiwa-miyabi", image: KYOTO },
-  { id: "nurburgring-gp", name: "nurburgring-gp", image: NURBURGRING },
-  // { id: "laguna-seca", name: "laguna-seca", image: LAGUNASECA },
+  {
+    id: "autopolis",
+    name: "Autopolis",
+    image: AUTOPOLIS,
+  },
+  {
+    id: "lemans",
+    name: "24 Heures du Mans",
+    image: LEMANS,
+  },
+  {
+    id: "redbull",
+    name: "Red Bull Ring",
+    image: REDBULL,
+  },
 ];
 
 export const RAIN_PRESETS: WeatherPreset[] = [

@@ -1,6 +1,15 @@
 import type { WeatherPreset } from "../types/WeatherPreset";
 import { DRY_PRESETS, RAIN_PRESETS, RANDOM_PRESET, SLOTS } from "./consts";
 
+export type WeatherGenerationMode = 1 | 2;
+
+export type GenerationResult = {
+  rainPercent: number;
+  rainSlots: number;
+  rainIndices: number[];
+  slots: WeatherPreset[];
+};
+
 export function clamp(n: number, a: number, b: number) {
   return Math.max(a, Math.min(b, n));
 }
@@ -30,14 +39,31 @@ export function pickUniqueIndices(count: number, total: number) {
     .sort((a, b) => a - b);
 }
 
-type GenerationResult = {
-  rainPercent: number;
-  rainSlots: number;
-  rainIndices: number[];
-  slots: WeatherPreset[];
-};
+export function buildContiguousRainIndices(count: number, total: number) {
+  if (count <= 0) return [];
+  if (count >= total) return Array.from({ length: total }, (_, i) => i);
 
-export function generateWeather(
+  /**
+   * mode=2 esetben a kezdőpozíció úgy van sorsolva,
+   * hogy az utolsó kocka is lehessen esős.
+   *
+   * Példa:
+   * - 4 esős kocka esetén a lehetséges blokkok: 1-2-3-4 ... 6-7-8-9
+   * - 3 esős kocka esetén a lehetséges blokkok: 1-2-3 ... 7-8-9
+   */
+  const maxStartIndex = Math.max(0, total - count);
+  const startIndex = randInt(0, maxStartIndex);
+
+  return Array.from({ length: count }, (_, i) => startIndex + i);
+}
+
+export function buildRainPercentFromSlotCount(rainSlots: number) {
+  return rainSlots === 0
+    ? 0
+    : clamp(rainSlots * 10 - 5 + randInt(0, 9), 0, 100);
+}
+
+function generateWeatherByPercent(
   minPct: number,
   maxPct: number,
 ): GenerationResult {
@@ -65,6 +91,44 @@ export function generateWeather(
   }
 
   return { rainPercent, rainSlots, rainIndices, slots };
+}
+
+function generateWeatherByRainSlotCount(
+  minRainSlots: number,
+  maxRainSlots: number,
+): GenerationResult {
+  const min = clamp(minRainSlots, 1, SLOTS);
+  const max = clamp(maxRainSlots, 1, SLOTS);
+  const lo = Math.min(min, max);
+  const hi = Math.max(min, max);
+
+  const rainSlots = randInt(lo, hi);
+  const rainIndices = buildContiguousRainIndices(rainSlots, SLOTS);
+
+  const slots: WeatherPreset[] = Array.from({ length: SLOTS }, (_, index) => {
+    return rainIndices.includes(index)
+      ? sampleOne(RAIN_PRESETS)
+      : sampleOne(DRY_PRESETS);
+  });
+
+  return {
+    rainPercent: buildRainPercentFromSlotCount(rainSlots),
+    rainSlots,
+    rainIndices,
+    slots,
+  };
+}
+
+export function generateWeather(
+  minValue: number,
+  maxValue: number,
+  mode: WeatherGenerationMode = 1,
+): GenerationResult {
+  if (mode === 2) {
+    return generateWeatherByRainSlotCount(minValue, maxValue);
+  }
+
+  return generateWeatherByPercent(minValue, maxValue);
 }
 
 export function badgeClasses(kind: WeatherPreset["kind"]) {
@@ -102,10 +166,12 @@ export function buildResultFromSlots(slots: WeatherPreset[]): GenerationResult {
 
   const rainSlots = rainIndices.length;
 
-  const rainPercent =
-    rainSlots === 0 ? 0 : clamp(rainSlots * 10 - 5 + randInt(0, 9), 0, 100);
-
-  return { rainPercent, rainSlots, rainIndices, slots };
+  return {
+    rainPercent: buildRainPercentFromSlotCount(rainSlots),
+    rainSlots,
+    rainIndices,
+    slots,
+  };
 }
 
 export function parseFixedPattern(

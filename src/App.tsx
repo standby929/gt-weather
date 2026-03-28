@@ -1,17 +1,33 @@
 import { useMemo, useRef, useState } from "react";
 import SlotCard from "./SlotCard";
-import { generateWeather, randInt, parseFixedPattern } from "./utils/utils";
+import {
+  generateWeather,
+  randInt,
+  parseFixedPattern,
+  type WeatherGenerationMode,
+} from "./utils/utils";
 
 import { SLOTS, TRACKS } from "./utils/consts";
 
 import LOGO from "./assets/logo-phoenix-league-nobg.png";
 
-const GAP = 1;
+const PERCENT_SLIDER_GAP = 1;
+const COUNT_SLIDER_GAP = 0;
 
 export default function App() {
+  const mode = useMemo<WeatherGenerationMode>(() => {
+    const rawMode = new URLSearchParams(window.location.search).get("mode");
+    return rawMode === "2" ? 2 : 1;
+  }, []);
+
+  const isMode2 = mode === 2;
+  const sliderGap = isMode2 ? COUNT_SLIDER_GAP : PERCENT_SLIDER_GAP;
+  const sliderMin = isMode2 ? 1 : 0;
+  const sliderMax = isMode2 ? SLOTS : 100;
+
   const [hasStarted, setHasStarted] = useState(false);
-  const [minPct, setMinPct] = useState(25);
-  const [maxPct, setMaxPct] = useState(65);
+  const [minValue, setMinValue] = useState(isMode2 ? 1 : 25);
+  const [maxValue, setMaxValue] = useState(isMode2 ? SLOTS : 65);
 
   const fixedFirstResult = useMemo(() => {
     const fp = new URLSearchParams(window.location.search).get("fp");
@@ -19,7 +35,9 @@ export default function App() {
   }, []);
 
   const fixedUsedRef = useRef(false);
-  const [result, setResult] = useState(() => generateWeather(minPct, maxPct));
+  const [result, setResult] = useState(() =>
+    generateWeather(minValue, maxValue, mode),
+  );
   const [isRunning, setIsRunning] = useState(false);
   const [revealedCount, setRevealedCount] = useState(0);
 
@@ -35,7 +53,7 @@ export default function App() {
     const next =
       !fixedUsedRef.current && fixedFirstResult
         ? ((fixedUsedRef.current = true), fixedFirstResult)
-        : generateWeather(minPct, maxPct);
+        : generateWeather(minValue, maxValue, mode);
 
     setResult(next);
     setHasStarted(true);
@@ -56,13 +74,13 @@ export default function App() {
 
   const rainInfo = `Eső arány: ${
     hasStarted ? result.rainPercent : "??"
-  }% → esős kockák: ${hasStarted ? result.rainSlots : "?"}/9`;
+  }% → esős kockák: ${hasStarted ? result.rainSlots : "?"}/${SLOTS}`;
 
   return (
     <div className="min-h-screen bg-linear-to-b from-slate-400 to-slate-900 text-black">
       {/* Tartalom */}
       <div
-        className="w-full px-4 md:px-8 lg:px-12 py-10"
+        className="w-full px-2 md:px-4 lg:px-8 py-4"
         style={{
           background: `url(${selectedTrack.image}) no-repeat center center / contain`,
         }}
@@ -74,9 +92,6 @@ export default function App() {
 
               {/* Pálya select */}
               <div className="mt-2">
-                <label className="block text-sm font-semibold text-black mb-1">
-                  Pálya
-                </label>
                 <select
                   value={selectedTrackId}
                   onChange={(e) => {
@@ -101,6 +116,11 @@ export default function App() {
                   ? result.rainIndices.map((i) => i + 1).join(", ")
                   : "—"}
               </p>
+              {isMode2 && (
+                <p className="text-black text-sm mt-1">
+                  mode=2: az eső összefüggő blokkban érkezik.
+                </p>
+              )}
             </div>
 
             <div>
@@ -113,40 +133,48 @@ export default function App() {
               <div className="mt-2 flex flex-row gap-4">
                 {/* MIN */}
                 <div className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-4">
-                  <div className="text-slate-300 text-sm">Minimum eső %</div>
+                  <div className="text-slate-300 text-sm">
+                    {isMode2 ? "Minimum esős kocka" : "Minimum eső %"}
+                  </div>
                   <input
                     type="range"
-                    min={0}
-                    max={Math.max(0, maxPct - GAP)} // <- ne mehessen a max fölé
-                    value={minPct}
+                    min={sliderMin}
+                    max={Math.max(sliderMin, maxValue - sliderGap)}
+                    value={minValue}
                     onChange={(e) => {
                       const nextMin = parseInt(e.target.value, 10);
-                      // biztosítjuk: min <= max - GAP
-                      setMinPct(Math.min(nextMin, maxPct - GAP));
+                      setMinValue(Math.min(nextMin, maxValue - sliderGap));
                     }}
                     className="w-full mt-2"
                     disabled={isRunning}
                   />
-                  <div className="mt-2 text-white font-semibold">{minPct}%</div>
+                  <div className="mt-2 text-white font-semibold">
+                    {minValue}
+                    {isMode2 ? " db" : "%"}
+                  </div>
                 </div>
 
                 {/* MAX */}
                 <div className="rounded-2xl bg-white/5 ring-1 ring-white/10 p-4">
-                  <div className="text-slate-300 text-sm">Maximum eső %</div>
+                  <div className="text-slate-300 text-sm">
+                    {isMode2 ? "Maximum esős kocka" : "Maximum eső %"}
+                  </div>
                   <input
                     type="range"
-                    min={Math.min(100, minPct + GAP)} // <- ne mehessen a min alá
-                    max={100}
-                    value={maxPct}
+                    min={Math.min(sliderMax, minValue + sliderGap)}
+                    max={sliderMax}
+                    value={maxValue}
                     onChange={(e) => {
                       const nextMax = parseInt(e.target.value, 10);
-                      // biztosítjuk: max >= min + GAP
-                      setMaxPct(Math.max(nextMax, minPct + GAP));
+                      setMaxValue(Math.max(nextMax, minValue + sliderGap));
                     }}
                     className="w-full mt-2"
                     disabled={isRunning}
                   />
-                  <div className="mt-2 text-white font-semibold">{maxPct}%</div>
+                  <div className="mt-2 text-white font-semibold">
+                    {maxValue}
+                    {isMode2 ? " db" : "%"}
+                  </div>
                 </div>
               </div>
             </div>
@@ -161,6 +189,7 @@ export default function App() {
                 isSpinning={isRunning}
                 reveal={idx < revealedCount}
                 hasStarted={hasStarted}
+                mode={mode}
               />
             ))}
           </div>

@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useMemo } from "react";
-import { badgeClasses, sampleOne } from "./utils/utils";
+import { badgeClasses, sampleOne, type WeatherGenerationMode } from "./utils/utils";
 import type { WeatherPreset } from "./types/WeatherPreset";
 import { DRY_PRESETS, RAIN_PRESETS, RANDOM_PRESET } from "./utils/consts";
 
@@ -10,12 +10,14 @@ export default function SlotCard({
   isSpinning,
   reveal,
   hasStarted,
+  mode,
 }: {
   index: number;
   finalPreset: WeatherPreset;
   isSpinning: boolean;
   reveal: boolean;
   hasStarted: boolean;
+  mode: WeatherGenerationMode;
 }) {
   // Egy “sor” (ikon + szöveg) fix magassága:
   // legyen kicsit nagyobb, mint a 150px ikon, hogy kényelmesen elférjen.
@@ -23,10 +25,14 @@ export default function SlotCard({
 
   const items = useMemo(() => {
     // Pörgésnél ez a “tekercs” fut, a legvégén fixen a finalPreset
-    const pool = [...DRY_PRESETS, RANDOM_PRESET, ...RAIN_PRESETS];
+    const pool =
+      mode === 2
+        ? [...DRY_PRESETS, ...RAIN_PRESETS]
+        : [...DRY_PRESETS, RANDOM_PRESET, ...RAIN_PRESETS];
+
     const long = Array.from({ length: 22 }, () => sampleOne(pool));
     return [...long, finalPreset];
-  }, [finalPreset]);
+  }, [finalPreset, mode]);
 
   // Mennyit kell felmozgatni, hogy teljesen “kifusson” a tekercs
   const totalY = items.length * ITEM_H;
