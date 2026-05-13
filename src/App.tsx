@@ -26,8 +26,8 @@ export default function App() {
   const sliderMax = isMode2 ? SLOTS : 100;
 
   const [hasStarted, setHasStarted] = useState(false);
-  const [minValue, setMinValue] = useState(isMode2 ? 1 : 25);
-  const [maxValue, setMaxValue] = useState(isMode2 ? SLOTS : 65);
+  const [minValue, setMinValue] = useState(isMode2 ? 2 : 25);
+  const [maxValue, setMaxValue] = useState(isMode2 ? 4 : 65);
 
   const fixedFirstResult = useMemo(() => {
     const fp = new URLSearchParams(window.location.search).get("fp");
